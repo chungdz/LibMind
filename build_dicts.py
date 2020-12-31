@@ -1,0 +1,71 @@
+import os
+import json
+import pickle
+import argparse
+
+import pandas as pd
+import numpy as np
+
+def parse_ent_list(x):
+    if x.strip() == "":
+        return ''
+
+    return ' '.join([k["WikidataId"] for k in json.loads(x)])
+
+
+print("Loading news info")
+f_train_news = os.path.join("data", "train/news.tsv")
+f_dev_news = os.path.join("data", "valid/news.tsv")
+f_test_news = os.path.join("data", "test/news.tsv")
+
+print("Loading training news")
+all_news = pd.read_csv(f_train_news, sep="\t", encoding="utf-8",
+                        names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
+                        quoting=3)
+
+print("Loading dev news")
+dev_news = pd.read_csv(f_dev_news, sep="\t", encoding="utf-8",
+                        names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
+                        quoting=3)
+all_news = pd.concat([all_news, dev_news], ignore_index=True)
+print("Loading testing news")
+test_news = pd.read_csv(f_test_news, sep="\t", encoding="utf-8",
+                        names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
+                        quoting=3)
+all_news = pd.concat([all_news, test_news], ignore_index=True)
+all_news = all_news.drop_duplicates("newsid")
+print("All news: {}".format(len(all_news)))
+
+news_id = all_news['newsid'].values
+news_dict = {}
+news_idx = 0
+for n in news_id:
+    news_dict[n] = news_idx
+    news_idx += 1
+
+json.dump(news_dict, open('data/news.json', 'w', encoding='utf-8'))
+
+print("Loading behaviors info")
+f_train_beh = os.path.join("data", "train/behaviors.tsv")
+f_dev_beh = os.path.join("data", "valid/behaviors.tsv")
+f_test_beh = os.path.join("data", "test/behaviors.tsv")
+
+print("Loading training beh")
+all_beh = pd.read_csv(f_train_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+print("Loading dev beh")
+dev_beh = pd.read_csv(f_dev_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+all_beh = pd.concat([all_beh, dev_beh], ignore_index=True)
+print("Loading testing beh")
+test_beh = pd.read_csv(f_test_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+all_beh = pd.concat([all_beh, test_beh], ignore_index=True)
+all_beh = all_beh.drop_duplicates("id")
+print("All beh: {}".format(len(all_beh)))
+
+user_ids = pd.unique(all_beh['uid'])
+user_dict = {}
+user_idx = 0
+for u in user_ids:
+    user_dict[u] = user_idx
+    user_idx += 1
+
+json.dump(user_dict, open('data/user.json', 'w', encoding='utf-8'))
