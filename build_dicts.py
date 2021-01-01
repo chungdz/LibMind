@@ -38,7 +38,7 @@ print("All news: {}".format(len(all_news)))
 
 news_id = all_news['newsid'].values
 news_dict = {}
-news_idx = 0
+news_idx = 1
 for n in news_id:
     news_dict[n] = news_idx
     news_idx += 1
