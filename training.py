@@ -30,7 +30,7 @@ from utils.eval_util import group_labels
 from utils.eval_util import cal_metric
 
 
-def run(cfg, rank, device, finished, train_dataset, valid_dataset):
+def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     """
     train and evaluate
     :param args: config
@@ -43,6 +43,7 @@ def run(cfg, rank, device, finished, train_dataset, valid_dataset):
     set_seed(7)
     print("Worker %d is setting dataset ... " % rank)
     # Build Dataloader
+    train_dataset = FMData(np.load(train_dataset_path))
     train_data_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, drop_last=True)
     valid_data_loader = DataLoader(valid_dataset, batch_size=cfg.batch_size, shuffle=False)
 
@@ -113,7 +114,7 @@ def train(cfg, epoch, rank, model, loader, optimizer, steps_one_epoch, device):
         enum_dataloader = enumerate(tqdm(loader, total=len(loader), desc="EP-{} train".format(epoch)))
 
     for i, (data, imp_id, y) in enum_dataloader:
-        if i >= steps_one_epoch * cfg.accu:
+        if i >= steps_one_epoch:
             break
         # data = {key: value.to(device) for key, value in data.items()}
         data = data.to(device)
@@ -185,7 +186,7 @@ def init_processes(cfg, local_rank, vocab, dataset, valid_dataset, finished, fn,
 
     device = torch.device("cuda:{}".format(local_rank))
 
-    fn(cfg, local_rank, device, finished, train_dataset=dataset, valid_dataset=valid_dataset)
+    fn(cfg, local_rank, device, finished, train_dataset_path=dataset, valid_dataset=valid_dataset)
 
 
 def split_dataset(dataset, gpu_count):
@@ -209,11 +210,11 @@ def split_valid_dataset(dataset, gpu_count):
 def main(cfg):
     
     set_seed(7)
-    print('load train')
-    train_list = []
-    for i in range(cfg.filenum):
-        train_list.append(np.load("data/raw/train-{}.npy".format(i)))
-    train_dataset = FMData(np.concatenate(train_list, axis=0))
+    # print('load train')
+    # train_list = []
+    # for i in range(cfg.filenum):
+    #     train_list.append(np.load("data/raw/train-{}.npy".format(i)))
+    # train_dataset = FMData(np.concatenate(train_list, axis=0))
     print('load dev')
     dev_list = []
     for i in range(cfg.filenum):
@@ -227,13 +228,13 @@ def main(cfg):
     finished = mp.Value('i', 0)
 
     assert(cfg.gpus > 1)
-    dataset_list = split_dataset(train_dataset, cfg.gpus)
+    # dataset_list = split_dataset(train_dataset, cfg.gpus)
     valid_dataset_list = split_valid_dataset(validate_dataset, cfg.gpus)
 
     processes = []
     for rank in range(cfg.gpus):
         p = mp.Process(target=init_processes, args=(
-            cfg, rank, None, dataset_list[rank], valid_dataset_list[rank], finished, run, "nccl"))
+            cfg, rank, None, "data/raw/train-{}-new.npy".format(rank), valid_dataset_list[rank], finished, run, "nccl"))
         p.start()
         processes.append(p)
 
@@ -245,7 +246,7 @@ if __name__ == '__main__':
     mp.set_start_method('spawn')
     parser = argparse.ArgumentParser()
     parser.add_argument('--filenum', type=int, default=10)
-    parser.add_argument('--batch_size', type=int, default=128, help='input batch size')
+    parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
     parser.add_argument('--hidden_size', type=int, default=100, help='hidden state size')
     parser.add_argument('--gpus', type=int, default=2, help='gpu_num')
     parser.add_argument('--epoch', type=int, default=10, help='the number of epochs to train for')
