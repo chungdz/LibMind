@@ -8,7 +8,9 @@ class FMData(Dataset):
         
     def __getitem__(self, index):
         # stuff
-        return (torch.LongTensor(self.file[:, 1:]), torch.LongTensor(self.file[:, 0]))
+        return (torch.LongTensor(self.file[:, 2:]), 
+                torch.LongTensor(self.file[:, 0]), 
+                torch.LongTensor(self.file[:, 1]))
  
     def __len__(self):
         return self.file.shape[0]

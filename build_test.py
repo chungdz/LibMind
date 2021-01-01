@@ -13,7 +13,7 @@ random.seed(7)
 
 def build_examples(rank, args, df, news_info, fout):
     data_list = []
-    for hist, imp in tqdm(df[["hist", "imp"]].values, total=df.shape[0]):
+    for imp_id, hist, imp in tqdm(df[["id", "hist", "imp"]].values, total=df.shape[0]):
         if str(hist) == 'nan':
             his_list = []
         else:
@@ -35,6 +35,7 @@ def build_examples(rank, args, df, news_info, fout):
             clabel = clabel ^ 1
 
             new_row = []
+            new_row.append(int(imp_id))
             new_row.append(label)
             new_row.append(curn)
             new_row += his_idx_list

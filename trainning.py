@@ -78,7 +78,7 @@ def run(cfg, rank, device, finished, train_dataset, valid_dataset):
 
             while finished.value < cfg.gpus:
                 time.sleep(1)
-            gather_all(cfg, cfg.gpus)
+            gather_all(cfg.result_path, cfg.gpus)
             finished.value = 0
 
 def average_gradients(model):
@@ -112,7 +112,7 @@ def train(cfg, epoch, rank, model, loader, optimizer, steps_one_epoch, device):
     if ((cfg.gpus < 2) or (cfg.gpus > 1 and rank == 0)):
         enum_dataloader = enumerate(tqdm(loader, total=len(loader), desc="EP-{} train".format(epoch)))
 
-    for i, (data, y) in enum_dataloader:
+    for i, (data, imp_id, y) in enum_dataloader:
         if i >= steps_one_epoch * cfg.accu:
             break
         # data = {key: value.to(device) for key, value in data.items()}
@@ -150,28 +150,27 @@ def validate(cfg, epoch, model, device, rank, valid_data_loader, fast_dev=False,
         data_iter = enumerate(valid_data_loader)
                         
     with torch.no_grad():
-        hit, mrr = [], []
-        for i, data in data_iter:
+        preds, truths, imp_ids = list(), list(), list()
+        for i, (data, imp_id, y) in data_iter:
             if fast_dev and i > 10:
                 break
 
-            scores, _ = model(data.to(device))
-            targets = data.y
+            imp_ids += imp_id.cpu().numpy().tolist()
+            data = data.to(device)
 
-            sub_scores = scores.topk(top_k)[1]
-            for score, target in zip(sub_scores.detach().cpu().numpy(), targets.detach().cpu().numpy()):
-                hit.append(np.isin(target, score))
-                if len(np.where(score == target)[0]) == 0:
-                    mrr.append(0)
-                else:
-                    mrr.append(1 / (np.where(score == target)[0][0] + 1))
+            # 1. Forward
+            pred = model.validation_step(data)
+
+            preds += pred.cpu().numpy().tolist()
+            truths += y.long().cpu().numpy().tolist()
 
         tmp_dict = {}
-        tmp_dict['hit'] = hit
-        tmp_dict['mrr'] = mrr
+        tmp_dict['imp'] = imp_ids
+        tmp_dict['labels'] = truths
+        tmp_dict['preds'] = preds
 
-        with open(cfg.result_path + 'tmp_{}.pkl'.format(rank), 'wb') as f:
-            pickle.dump(tmp_dict, f)
+        with open(cfg.dataset.result_path + 'tmp_{}.json'.format(rank), 'w', encoding='utf-8') as f:
+            json.dump(tmp_dict, f)
         f.close()
 
 
@@ -213,12 +212,12 @@ def main(cfg):
     print('load train')
     train_list = []
     for i in range(cfg.filenum):
-        train_list.append(np.load("train-{}.npy".format(i)))
+        train_list.append(np.load("data/raw/train-{}.npy".format(i)))
     train_dataset = FMData(np.concatenate(train_list, axis=0))
     print('load dev')
     dev_list = []
     for i in range(cfg.filenum):
-        dev_list.append(np.load("dev-{}.npy".format(i)))
+        dev_list.append(np.load("data/raw/dev-{}.npy".format(i)))
     validate_dataset = FMData(np.concatenate(dev_list, axis=0))
     print('load news dict')
     news_dict = json.load(open('./data/news.json', 'r', encoding='utf-8'))
