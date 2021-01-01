@@ -62,7 +62,7 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     if (cfg.gpus < 2) or (cfg.gpus > 1 and rank == 0):
         validate(cfg, -1, model, device, rank, valid_data_loader, fast_dev=True)
         logging.warning(model)
-        gather_all(cfg.result_path, 1)
+        gather_all(cfg.result_path, 1, validate=True, save=False)
     
     # Training and validation
     for epoch in range(cfg.epoch):
@@ -79,7 +79,7 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
 
             while finished.value < cfg.gpus:
                 time.sleep(1)
-            gather_all(cfg.result_path, cfg.gpus)
+            gather_all(cfg.result_path, cfg.gpus, validate=True, save=False)
             finished.value = 0
 
 def average_gradients(model):

@@ -5,7 +5,7 @@ import torch
 class FMData(Dataset):
     def __init__(self, file):
         self.file = torch.LongTensor(file)
-        print(file.shape)
+        
     def __getitem__(self, index):
         # stuff
         # return (torch.LongTensor(self.file[index, 2:]), 
