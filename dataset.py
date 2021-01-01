@@ -4,13 +4,14 @@ import torch
  
 class FMData(Dataset):
     def __init__(self, file):
-        self.file = file
-        
+        self.file = torch.LongTensor(file)
+        print(file.shape)
     def __getitem__(self, index):
         # stuff
-        return (torch.LongTensor(self.file[:, 2:]), 
-                torch.LongTensor(self.file[:, 0]), 
-                torch.LongTensor(self.file[:, 1]))
+        # return (torch.LongTensor(self.file[index, 2:]), 
+        #         torch.LongTensor(self.file[index, 0]), 
+        #         torch.LongTensor(self.file[index, 1]))
+        return self.file[index]
  
     def __len__(self):
         return self.file.shape[0]

@@ -38,6 +38,6 @@ class LibFM(nn.Module):
         logitFM = (logitFM1 - logitFM2) * 0.5
 
         logit = (logitL + logitFM).squeeze()
-        logit = logit + self.bias.expand(1, logit.size()[0]).permute(0, 1)
+        logit = logit + self.bias.expand(1, logit.size()[0]).view(-1)
   
         return torch.sigmoid(logit)

@@ -113,14 +113,14 @@ def train(cfg, epoch, rank, model, loader, optimizer, steps_one_epoch, device):
     if ((cfg.gpus < 2) or (cfg.gpus > 1 and rank == 0)):
         enum_dataloader = enumerate(tqdm(loader, total=len(loader), desc="EP-{} train".format(epoch)))
 
-    for i, (data, imp_id, y) in enum_dataloader:
+    for i, data in enum_dataloader:
         if i >= steps_one_epoch:
             break
         # data = {key: value.to(device) for key, value in data.items()}
         data = data.to(device)
         # 1. Forward
-        pred = model(data)
-        loss = F.binary_cross_entropy(pred, y)
+        pred = model(data[:, 2:])
+        loss = F.binary_cross_entropy(pred, data[:, 1].float())
 
         # 3.Backward.
         loss.backward()
@@ -152,25 +152,25 @@ def validate(cfg, epoch, model, device, rank, valid_data_loader, fast_dev=False,
                         
     with torch.no_grad():
         preds, truths, imp_ids = list(), list(), list()
-        for i, (data, imp_id, y) in data_iter:
+        for i, data in data_iter:
             if fast_dev and i > 10:
                 break
 
-            imp_ids += imp_id.cpu().numpy().tolist()
+            imp_ids += data[:, 0].cpu().numpy().tolist()
             data = data.to(device)
 
             # 1. Forward
-            pred = model.validation_step(data)
+            pred = model(data[:, 2:])
 
             preds += pred.cpu().numpy().tolist()
-            truths += y.long().cpu().numpy().tolist()
+            truths += data[:, 1].long().cpu().numpy().tolist()
 
         tmp_dict = {}
         tmp_dict['imp'] = imp_ids
         tmp_dict['labels'] = truths
         tmp_dict['preds'] = preds
 
-        with open(cfg.dataset.result_path + 'tmp_{}.json'.format(rank), 'w', encoding='utf-8') as f:
+        with open(cfg.result_path + 'tmp_{}.json'.format(rank), 'w', encoding='utf-8') as f:
             json.dump(tmp_dict, f)
         f.close()
 
@@ -223,8 +223,8 @@ def main(cfg):
     print('load news dict')
     news_dict = json.load(open('./data/news.json', 'r', encoding='utf-8'))
     cfg.news_num = len(news_dict)
-    cfg.result_path = '/result/'
-    cfg.checkpoint_path = '/checkpoint/'
+    cfg.result_path = './result/'
+    cfg.checkpoint_path = './checkpoint/'
     finished = mp.Value('i', 0)
 
     assert(cfg.gpus > 1)
