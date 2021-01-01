@@ -18,7 +18,7 @@ def build_examples(rank, args, df, news_info, fout):
             his_list = []
         else:
             his_list = str(hist).strip().split()
-            
+
         his_idx_list = [news_info[h] for h in his_list]
         hislen = len(his_idx_list)
         if hislen < args.max_hist_length:
@@ -46,8 +46,8 @@ def build_examples(rank, args, df, news_info, fout):
         all_imp = imp_pos_list + sampled
         for p in all_imp:
             new_row = []
-            new_row.append(p[0])
             new_row.append(p[1])
+            new_row.append(p[0])
             new_row += his_idx_list
             data_list.append(new_row)
     
@@ -65,7 +65,7 @@ def main(args):
 
     processes = []
     for i in range(args.processes):
-        output_path = os.path.join("data", args.fout, "training_set_dist-{}.npy".format(i))
+        output_path = os.path.join("data", args.fout,  "{}-{}.npy".format(args.ftype, i))
         p = mp.Process(target=build_examples, args=(
             i, args, dfs[i], news_info, output_path))
         p.start()
@@ -82,6 +82,8 @@ if __name__ == "__main__":
                         help="Path of the training samples file.")
     parser.add_argument("--fout", default="raw", type=str,
                         help="Path of the output dir.")
+    parser.add_argument("--ftype", default="train", type=str,
+                        help="train or dev")
     parser.add_argument("--max_hist_length", default=100, type=int,
                         help="Max length of the click history of the user.")
     parser.add_argument("--processes", default=40, type=int,
