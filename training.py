@@ -28,6 +28,7 @@ from utils.train_util import set_seed
 from utils.train_util import save_checkpoint_by_epoch
 from utils.eval_util import group_labels
 from utils.eval_util import cal_metric
+from torchfm.model.fm import FactorizationMachineModel
 
 
 def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
@@ -48,7 +49,11 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     valid_data_loader = DataLoader(valid_dataset, batch_size=cfg.batch_size, shuffle=False)
 
     # # Build model.
-    model = LibFM(news_num=cfg.news_num)
+    # model = LibFM(news_num=cfg.news_num)
+    fleid_dims = []
+    for t in range(cfg.max_hist_length + 1):
+        fleid_dims.append(cfg.news_num)
+    model = FactorizationMachineModel(fleid_dims, 100)
     model.to(device)
 
     # Build optimizer.
@@ -253,6 +258,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.1, help='learning rate')  # [0.001, 0.0005, 0.0001]
     parser.add_argument('--momentum', type=float, default=0.9, help='sgd momentum')  # [0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     parser.add_argument('--port', type=int, default=9337)
+    parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
     opt = parser.parse_args()
     logging.warning(opt)
 
