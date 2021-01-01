@@ -1,12 +1,14 @@
 from torch.utils.data.dataset import Dataset
+from tqdm import tqdm
+import torch
  
-class MyCustomDataset(Dataset):
-    def __init__(self, filetype, file_count):
-        
+class FMData(Dataset):
+    def __init__(self, file):
+        self.file = file
         
     def __getitem__(self, index):
         # stuff
-        return (img, label)
+        return (torch.LongTensor(self.file[:, 1:]), torch.LongTensor(self.file[:, 0]))
  
     def __len__(self):
-        return count
+        return self.file.shape[0]
