@@ -50,19 +50,21 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     valid_data_loader = DataLoader(valid_dataset, batch_size=cfg.batch_size, shuffle=False)
 
     # # Build model.
-    if cfg.model = 'fm':
+    if cfg.model == 'fm':
         fleid_dims = []
         for t in range(cfg.max_hist_length + 1):
             fleid_dims.append(cfg.news_num)
         model = FactorizationMachineModel(fleid_dims, 100)
+        print('load FactorizationMachineModel')
         model.to(device)
-    elif cfg.model = 'dfm':
+    elif cfg.model == 'dfm':
         fleid_dims = []
         mlp_dims = []
         for t in range(cfg.max_hist_length + 1):
             fleid_dims.append(cfg.news_num)
             mlp_dims.append(100)
         model = DeepFactorizationMachineModel(fleid_dims, 100, mlp_dims, 0.2)
+        print('load DeepFactorizationMachineModel')
         model.to(device)
 
     # Build optimizer.

@@ -107,20 +107,20 @@ def main(cfg):
     news_dict = json.load(open('./data/news.json', 'r', encoding='utf-8'))
     cfg.news_num = len(news_dict)
 
-    if cfg.model = 'fm':
+    if cfg.model == 'fm':
         fleid_dims = []
         for t in range(cfg.max_hist_length + 1):
             fleid_dims.append(cfg.news_num)
         model = FactorizationMachineModel(fleid_dims, 100)
-        model.to(device)
-    elif cfg.model = 'dfm':
+        print('load FactorizationMachineModel')
+    elif cfg.model == 'dfm':
         fleid_dims = []
         mlp_dims = []
         for t in range(cfg.max_hist_length + 1):
             fleid_dims.append(cfg.news_num)
             mlp_dims.append(100)
         model = DeepFactorizationMachineModel(fleid_dims, 100, mlp_dims, 0.2)
-        model.to(device)
+        print('load DeepFactorizationMachineModel')
 
     saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
     print("Load from:", saved_model_path)
