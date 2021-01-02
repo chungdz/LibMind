@@ -21,19 +21,19 @@ from utils.train_util import save_checkpoint_by_epoch
 from utils.eval_util import group_labels
 from utils.eval_util import cal_metric
 from torchfm.model.fm import FactorizationMachineModel
+from torchfm.model.dfm import DeepFactorizationMachineModel
 
 def run(cfg, rank, test_dataset, device, model):
-    set_seed(cfg.training.seed)
+    set_seed(7)
 
-    model.title_embedding = model.title_embedding.to(device)
     model.to(device)
     model.eval()
 
     # test_dataset = DistValidationDataset(cfg.dataset, start, end, "test_set_dist", "test_set-{}.pt".format(check_point_offset))
     valid_data_loader = DataLoader(
-        test_dataset, batch_size=cfg.training.batch_size, shuffle=False)
+        test_dataset, batch_size=cfg.batch_size, shuffle=False)
 
-    if ((cfg.training.gpus < 2) or (cfg.training.gpus > 1 and rank == 0)):
+    if ((cfg.gpus < 2) or (cfg.gpus > 1 and rank == 0)):
         data_iter = tqdm(enumerate(valid_data_loader),
                         desc="EP_test:%d" % 1,
                         total=len(valid_data_loader),
@@ -101,16 +101,26 @@ def split_dataset(dataset, gpu_count):
 def main(cfg):
     set_seed(7)
 
-    file_num = cfg.file_num
+    file_num = cfg.filenum
     cfg.result_path = './result/'
     print('load dict')
     news_dict = json.load(open('./data/news.json', 'r', encoding='utf-8'))
     cfg.news_num = len(news_dict)
 
-    fleid_dims = []
-    for t in range(cfg.max_hist_length + 1):
-        fleid_dims.append(cfg.news_num)
-    model = FactorizationMachineModel(fleid_dims, 100)
+    if cfg.model = 'fm':
+        fleid_dims = []
+        for t in range(cfg.max_hist_length + 1):
+            fleid_dims.append(cfg.news_num)
+        model = FactorizationMachineModel(fleid_dims, 100)
+        model.to(device)
+    elif cfg.model = 'dfm':
+        fleid_dims = []
+        mlp_dims = []
+        for t in range(cfg.max_hist_length + 1):
+            fleid_dims.append(cfg.news_num)
+            mlp_dims.append(100)
+        model = DeepFactorizationMachineModel(fleid_dims, 100, mlp_dims, 0.2)
+        model.to(device)
 
     saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
     print("Load from:", saved_model_path)
@@ -119,16 +129,16 @@ def main(cfg):
         return []
     model.cpu()
     pretrained_model = torch.load(saved_model_path, map_location='cpu')
-    model.load_state_dict(pretrained_model, strict=False)
+    print(model.load_state_dict(pretrained_model, strict=False))
 
     for point_num in range(file_num):
-        print("processing data/raw/test_-{}.npy".format(point_num))
-        valid_dataset = FMData(np.load("data/raw/test-{}.npy").format(point_num))
+        print("processing data/raw/test-{}.npy".format(point_num))
+        valid_dataset = FMData(np.load("data/raw/test-{}.npy".format(point_num)))
 
-        dataset_list = split_dataset(valid_dataset, cfg.training.gpus)
+        dataset_list = split_dataset(valid_dataset, cfg.gpus)
         
         processes = []
-        for rank in range(cfg.training.gpus):
+        for rank in range(cfg.gpus):
             cur_device = torch.device("cuda:{}".format(rank))
 
             p = mp.Process(target=run, args=(cfg, rank, dataset_list[rank], cur_device, model))
@@ -140,7 +150,7 @@ def main(cfg):
         
         gather(cfg, point_num)
     
-    gather_all(cfg.result_path, file_num, validate=True, save=False)
+    gather_all(cfg.result_path, file_num, validate=False, save=True)
         
 
 
@@ -157,7 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('--momentum', type=float, default=0.9, help='sgd momentum')  # [0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     parser.add_argument('--port', type=int, default=9337)
     parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
-    
+    parser.add_argument("--model", default='fm', type=str)
     opt = parser.parse_args()
     logging.warning(opt)
 

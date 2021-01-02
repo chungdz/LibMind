@@ -29,6 +29,7 @@ from utils.train_util import save_checkpoint_by_epoch
 from utils.eval_util import group_labels
 from utils.eval_util import cal_metric
 from torchfm.model.fm import FactorizationMachineModel
+from torchfm.model.dfm import DeepFactorizationMachineModel
 
 
 def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
@@ -49,12 +50,20 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     valid_data_loader = DataLoader(valid_dataset, batch_size=cfg.batch_size, shuffle=False)
 
     # # Build model.
-    # model = LibFM(news_num=cfg.news_num)
-    fleid_dims = []
-    for t in range(cfg.max_hist_length + 1):
-        fleid_dims.append(cfg.news_num)
-    model = FactorizationMachineModel(fleid_dims, 100)
-    model.to(device)
+    if cfg.model = 'fm':
+        fleid_dims = []
+        for t in range(cfg.max_hist_length + 1):
+            fleid_dims.append(cfg.news_num)
+        model = FactorizationMachineModel(fleid_dims, 100)
+        model.to(device)
+    elif cfg.model = 'dfm':
+        fleid_dims = []
+        mlp_dims = []
+        for t in range(cfg.max_hist_length + 1):
+            fleid_dims.append(cfg.news_num)
+            mlp_dims.append(100)
+        model = DeepFactorizationMachineModel(fleid_dims, 100, mlp_dims, 0.2)
+        model.to(device)
 
     # Build optimizer.
     steps_one_epoch = len(train_data_loader)
@@ -259,6 +268,7 @@ if __name__ == '__main__':
     parser.add_argument('--momentum', type=float, default=0.9, help='sgd momentum')  # [0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     parser.add_argument('--port', type=int, default=9337)
     parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
+    parser.add_argument("--model", default='fm', type=str)
     opt = parser.parse_args()
     logging.warning(opt)
 
