@@ -22,6 +22,7 @@ from utils.eval_util import group_labels
 from utils.eval_util import cal_metric
 from torchfm.model.fm import FactorizationMachineModel
 from torchfm.model.dfm import DeepFactorizationMachineModel
+from torchfm.model.wd import WideAndDeepModel
 
 def run(cfg, rank, test_dataset, device, model):
     set_seed(7)
@@ -121,6 +122,14 @@ def main(cfg):
             mlp_dims.append(100)
         model = DeepFactorizationMachineModel(fleid_dims, 100, mlp_dims, 0.2)
         print('load DeepFactorizationMachineModel')
+    elif cfg.model == 'wd':
+        fleid_dims = []
+        mlp_dims = []
+        for t in range(cfg.max_hist_length + 1):
+            fleid_dims.append(cfg.news_num)
+            mlp_dims.append(100)
+        model = WideAndDeepModel(fleid_dims, 100, mlp_dims, 0.2)
+        print('load WideAndDeepModel')
 
     saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
     print("Load from:", saved_model_path)

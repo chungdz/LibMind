@@ -30,6 +30,7 @@ from utils.eval_util import group_labels
 from utils.eval_util import cal_metric
 from torchfm.model.fm import FactorizationMachineModel
 from torchfm.model.dfm import DeepFactorizationMachineModel
+from torchfm.model.wd import WideAndDeepModel
 
 
 def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
@@ -65,6 +66,15 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
             mlp_dims.append(100)
         model = DeepFactorizationMachineModel(fleid_dims, 100, mlp_dims, 0.2)
         print('load DeepFactorizationMachineModel')
+        model.to(device)
+    elif cfg.model == 'wd':
+        fleid_dims = []
+        mlp_dims = []
+        for t in range(cfg.max_hist_length + 1):
+            fleid_dims.append(cfg.news_num)
+            mlp_dims.append(100)
+        model = WideAndDeepModel(fleid_dims, 100, mlp_dims, 0.2)
+        print('load WideAndDeepModel')
         model.to(device)
 
     # Build optimizer.
