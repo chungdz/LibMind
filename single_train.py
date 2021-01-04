@@ -50,45 +50,12 @@ def run(cfg, rank, device, train_dataset, valid_dataset):
     train_data_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, drop_last=True)
     valid_data_loader = DataLoader(valid_dataset, batch_size=cfg.batch_size, shuffle=False)
 
-    # # Build model.
-    if cfg.model == 'fm':
-        fleid_dims = []
-        for t in range(cfg.max_hist_length + 1):
-            fleid_dims.append(cfg.news_num)
-        model = FactorizationMachineModel(fleid_dims, 100)
-        print('load FactorizationMachineModel')
-        model.to(device)
-    elif cfg.model == 'dfm':
-        fleid_dims = []
-        mlp_dims = []
-        for t in range(cfg.max_hist_length + 1):
-            fleid_dims.append(cfg.news_num)
-            mlp_dims.append(100)
-        model = DeepFactorizationMachineModel(fleid_dims, 100, mlp_dims, 0.2)
-        print('load DeepFactorizationMachineModel')
-        model.to(device)
-    elif cfg.model == 'wd':
-        fleid_dims = []
-        mlp_dims = []
-        for t in range(cfg.max_hist_length + 1):
-            fleid_dims.append(cfg.news_num)
-            mlp_dims.append(100)
-        model = WideAndDeepModel(fleid_dims, 100, mlp_dims, 0.2)
-        print('load WideAndDeepModel')
-        model.to(device)
-    elif cfg.model == 'ctr_dfm':
+    if cfg.model == 'ctr_dfm':
         fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
         var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
         f = fix_f + var_f
         print('load ctr dfm')
         model = DeepFM(f, f, task='binary', device=device)
-    elif cfg.model == 'ctr_fm':
-        fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
-        var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
-        f = fix_f + var_f
-        print('load ctr fm')
-        model = DeepFM(f, f, task='binary', device=device)
-        model.use_dnn = False
 
     # Build optimizer.
     steps_one_epoch = len(train_data_loader)
