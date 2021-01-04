@@ -23,11 +23,33 @@ from utils.eval_util import cal_metric
 from torchfm.model.fm import FactorizationMachineModel
 from torchfm.model.dfm import DeepFactorizationMachineModel
 from torchfm.model.wd import WideAndDeepModel
+from deepctr_torch.inputs import SparseFeat, VarLenSparseFeat, get_feature_names
+from deepctr_torch.models import DeepFM
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 def run(cfg, rank, test_dataset, device, model):
     set_seed(7)
 
-    model.to(device)
+    if cfg.model == 'ctr_dfm':
+        fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
+        var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
+        f = fix_f + var_f
+        f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=10, combiner='sum'))
+        f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * 10, combiner='mean'))
+        print('load ctr dfm')
+        model = DeepFM(f, f, task='binary', device=device)
+
+        saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
+        print("Load from:", saved_model_path)
+        if not os.path.exists(saved_model_path):
+            print("Not Exist: {}".format(saved_model_path))
+            return []
+    
+        pretrained_model = torch.load(saved_model_path, map_location=device)
+        model.load_state_dict(pretrained_model, strict=False)
+    else:
+        model.to(device)
     model.eval()
 
     # test_dataset = DistValidationDataset(cfg.dataset, start, end, "test_set_dist", "test_set-{}.pt".format(check_point_offset))
@@ -107,6 +129,9 @@ def main(cfg):
     print('load dict')
     news_dict = json.load(open('./data/news.json', 'r', encoding='utf-8'))
     cfg.news_num = len(news_dict)
+    print('load words dict')
+    word_dict = json.load(open('./data/word.json', 'r', encoding='utf-8'))
+    cfg.word_num = len(word_dict)
 
     if cfg.model == 'fm':
         fleid_dims = []
@@ -130,6 +155,14 @@ def main(cfg):
             mlp_dims.append(100)
         model = WideAndDeepModel(fleid_dims, 100, mlp_dims, 0.2)
         print('load WideAndDeepModel')
+    elif cfg.model == 'ctr_dfm':
+        fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
+        var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
+        f = fix_f + var_f
+        f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=10, combiner='sum'))
+        f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * 10, combiner='mean'))
+        print('load ctr dfm')
+        model = DeepFM(f, f, task='binary', device='cpu')
 
     saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
     print("Load from:", saved_model_path)

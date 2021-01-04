@@ -82,6 +82,8 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
         fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
         var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
         f = fix_f + var_f
+        f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=10, combiner='sum'))
+        f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * 10, combiner='mean'))
         print('load ctr dfm')
         model = DeepFM(f, f, task='binary', device=device)
     elif cfg.model == 'ctr_fm':
@@ -262,7 +264,10 @@ def main(cfg):
     validate_dataset = FMData(np.concatenate(dev_list, axis=0))
     print('load news dict')
     news_dict = json.load(open('./data/news.json', 'r', encoding='utf-8'))
+    print('load words dict')
+    word_dict = json.load(open('./data/word.json', 'r', encoding='utf-8'))
     cfg.news_num = len(news_dict)
+    cfg.word_num = len(word_dict)
     cfg.result_path = './result/'
     cfg.checkpoint_path = './checkpoint/'
     finished = mp.Value('i', 0)

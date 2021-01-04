@@ -2,7 +2,7 @@ import os
 import json
 import pickle
 import argparse
-
+import re
 import pandas as pd
 import numpy as np
 
@@ -11,6 +11,11 @@ def parse_ent_list(x):
         return ''
 
     return ' '.join([k["WikidataId"] for k in json.loads(x)])
+
+punctuation = '!,;:?"\''
+def removePunctuation(text):
+    text = re.sub(r'[{}]+'.format(punctuation),'',text)
+    return text.strip().lower()
 
 
 print("Loading news info")
@@ -36,14 +41,31 @@ all_news = pd.concat([all_news, test_news], ignore_index=True)
 all_news = all_news.drop_duplicates("newsid")
 print("All news: {}".format(len(all_news)))
 
-news_id = all_news['newsid'].values
 news_dict = {}
+word_dict = {}
+word_idx = 1
 news_idx = 1
-for n in news_id:
-    news_dict[n] = news_idx
+for n, title in all_news[['newsid', "title"]].values:
+    news_dict[n] = {}
+    news_dict[n]['idx'] = news_idx
     news_idx += 1
 
+    tarr = removePunctuation(title).split()
+    wid_arr = []
+    for t in tarr:
+        if t not in word_dict:
+            word_dict[t] = word_idx
+            word_idx += 1
+        wid_arr.append(word_dict[t])
+    cur_len = len(wid_arr)
+    if cur_len < 10:
+        for l in range(10 - cur_len):
+            wid_arr.append(0)
+    news_dict[n]['title'] = wid_arr[:10]   
+
+print('all word', len(word_dict))
 json.dump(news_dict, open('data/news.json', 'w', encoding='utf-8'))
+json.dump(word_dict, open('data/word.json', 'w', encoding='utf-8'))
 
 print("Loading behaviors info")
 f_train_beh = os.path.join("data", "train/behaviors.tsv")
