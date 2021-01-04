@@ -51,7 +51,7 @@ def run(cfg, rank, test_dataset, device, model):
             data = data.to(device)
 
             # 1. Forward
-            pred = model(data[:, 2:])
+            pred = model(data[:, 2:]).squeeze()
 
             preds += pred.cpu().numpy().tolist()
             truths += data[:, 1].long().cpu().numpy().tolist()
