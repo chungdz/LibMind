@@ -81,8 +81,7 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     steps_one_epoch = len(train_data_loader)
     train_steps = cfg.epoch * steps_one_epoch
     print("Total train steps: ", train_steps)
-    optimizer = torch.optim.SGD(model.parameters(), lr=cfg.lr, momentum=cfg.momentum)
-
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     print("Worker %d is working ... " % rank)
     # Fast check the validation process
     if (cfg.gpus < 2) or (cfg.gpus > 1 and rank == 0):
@@ -276,8 +275,8 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', type=int, default=100, help='hidden state size')
     parser.add_argument('--gpus', type=int, default=2, help='gpu_num')
     parser.add_argument('--epoch', type=int, default=10, help='the number of epochs to train for')
-    parser.add_argument('--lr', type=float, default=0.1, help='learning rate')  # [0.001, 0.0005, 0.0001]
-    parser.add_argument('--momentum', type=float, default=0.9, help='sgd momentum')  # [0.001, 0.0005, 0.0001, 0.00005, 0.00001]
+    parser.add_argument('--lr', type=float, default=0.001, help='learning rate')  # [0.001, 0.0005, 0.0001]
+    parser.add_argument('--weight_decay', type=float, default=1e-6)
     parser.add_argument('--port', type=int, default=9337)
     parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
     parser.add_argument("--model", default='fm', type=str)
