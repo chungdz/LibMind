@@ -31,6 +31,8 @@ from utils.eval_util import cal_metric
 from torchfm.model.fm import FactorizationMachineModel
 from torchfm.model.dfm import DeepFactorizationMachineModel
 from torchfm.model.wd import WideAndDeepModel
+from deepctr_torch.inputs import SparseFeat, VarLenSparseFeat, get_feature_names
+from deepctr_torch.models import DeepFM
 
 
 def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
@@ -76,6 +78,19 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
         model = WideAndDeepModel(fleid_dims, 100, mlp_dims, 0.2)
         print('load WideAndDeepModel')
         model.to(device)
+    elif cfg.model == 'ctr_dfm':
+        fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
+        var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
+        f = fix_f + var_f
+        print('load ctr dfm')
+        model = DeepFM(f, f, task='binary', device=device)
+    elif cfg.model == 'ctr_fm':
+        fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
+        var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
+        f = fix_f + var_f
+        print('load ctr fm')
+        model = DeepFM(f, f, task='binary', device=device)
+        model.use_dnn = False
 
     # Build optimizer.
     steps_one_epoch = len(train_data_loader)
@@ -144,7 +159,7 @@ def train(cfg, epoch, rank, model, loader, optimizer, steps_one_epoch, device):
         # data = {key: value.to(device) for key, value in data.items()}
         data = data.to(device)
         # 1. Forward
-        pred = model(data[:, 2:])
+        pred = model(data[:, 2:]).squeeze()
         loss = F.binary_cross_entropy(pred, data[:, 1].float())
 
         # 3.Backward.
@@ -185,7 +200,7 @@ def validate(cfg, epoch, model, device, rank, valid_data_loader, fast_dev=False,
             data = data.to(device)
 
             # 1. Forward
-            pred = model(data[:, 2:])
+            pred = model(data[:, 2:]).squeeze()
 
             preds += pred.cpu().numpy().tolist()
             truths += data[:, 1].long().cpu().numpy().tolist()
