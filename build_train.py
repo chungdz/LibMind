@@ -41,10 +41,13 @@ def build_examples(rank, args, df, news_info, fout):
             else:
                 raise Exception('label error!')
         # down sample
-        neg_num = math.ceil(len(imp_neg_list) / 5)
-        # neg_num = len(imp_neg_list)
-        sampled = random.sample(imp_neg_list, neg_num)
-        all_imp = imp_pos_list + sampled
+        if args.ftype == 'train':
+            neg_num = math.ceil(len(imp_neg_list) / 5)
+            sampled = random.sample(imp_neg_list, neg_num)
+            all_imp = imp_pos_list + sampled
+        elif args.ftype == 'dev':
+            all_imp = imp_pos_list + imp_neg_list
+
         for p in all_imp:
             new_row = []
             new_row.append(int(imp_id))
