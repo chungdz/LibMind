@@ -92,8 +92,7 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
         var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
         f = fix_f + var_f
         print('load ctr fm')
-        model = DeepFM(f, f, task='binary', device=device)
-        model.use_dnn = False
+        model = LibFM(f, f, task='binary', device=device)
 
     # Build optimizer.
     steps_one_epoch = len(train_data_loader)

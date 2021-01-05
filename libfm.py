@@ -1,43 +1,49 @@
-# -*- coding: utf-8 -*-
+# -*- coding:utf-8 -*-
 """
-Created on 4/4/2019
-@author: RuihongQiu
+Author:
+    Weichen Shen,wcshen1994@163.com
+Reference:
+    [1] Guo H, Tang R, Ye Y, et al. Deepfm: a factorization-machine based neural network for ctr prediction[J]. arXiv preprint arXiv:1703.04247, 2017.(https://arxiv.org/abs/1703.04247)
 """
-
-
-import math
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-class LibFM(nn.Module):
-    """
-    Args:
-        hidden_size: the number of units in a hidden layer.
-        n_node: the number of items in the whole item set for embedding layer.
-    """
-    def __init__(self, news_num, dim_num=100):
-        super(LibFM, self).__init__()
-        self.embeddingL = nn.Embedding(news_num, 1)
-        self.embeddingQ = nn.Embedding(news_num, dim_num)
-        self.bias = nn.parameter.Parameter(torch.randn((1)).type(torch.FloatTensor))
-        self.news_num = news_num
+from deepctr_torch.models.basemodel import BaseModel
+from deepctr_torch.inputs import combined_dnn_input
+from deepctr_torch.layers import FM, DNN
+
+
+class LibFM(BaseModel):
+
+    def __init__(self,
+                 linear_feature_columns, dnn_feature_columns, use_fm=True,
+                 dnn_hidden_units=(256, 128),
+                 l2_reg_linear=0.00001, l2_reg_embedding=0.00001, l2_reg_dnn=0, init_std=0.0001, seed=1024,
+                 dnn_dropout=0,
+                 dnn_activation='relu', dnn_use_bn=False, task='binary', device='cpu'):
+
+        super(LibFM, self).__init__(linear_feature_columns, dnn_feature_columns, l2_reg_linear=l2_reg_linear,
+                                     l2_reg_embedding=l2_reg_embedding, init_std=init_std, seed=seed, task=task,
+                                     device=device)
+
+        self.use_fm = use_fm
+        
+        if use_fm:
+            self.fm = FM()
+
+        
+        self.to(device)
 
     def forward(self, X):
-        # X batch_size, 1 + his_len
-        eL = self.embeddingL(X)
-        logitL = eL.sum(dim=1, keepdim=True)
 
-        eQ = self.embeddingQ(X)
-        logitFM1 = eQ.mul(eQ).sum(1, keepdim=True).sum(2, keepdim=True)
+        sparse_embedding_list, dense_value_list = self.input_from_feature_columns(X, self.dnn_feature_columns,
+                                                                                  self.embedding_dict)
+        logit = self.linear_model(X)
 
-        z = eQ.sum(1, keepdim=True)
-        z2 = z.mul(z)
-        logitFM2 = z2.sum(dim=2, keepdim=True)
+        if self.use_fm and len(sparse_embedding_list) > 0:
+            fm_input = torch.cat(sparse_embedding_list, dim=1)
+            logit += self.fm(fm_input)
 
-        logitFM = (logitFM1 - logitFM2) * 0.5
+        y_pred = self.out(logit)
 
-        logit = (logitL + logitFM).squeeze()
-        logit = logit + self.bias.expand(1, logit.size()[0]).view(-1)
-  
-        return torch.sigmoid(logit)
+        return y_pred
