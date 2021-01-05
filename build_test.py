@@ -13,7 +13,9 @@ from tqdm import tqdm
 random.seed(7)
 
 def build_examples(rank, args, df, news_info, fout):
-    time.sleep((rank // 10) * 80)
+    sleep_time = (rank // 10) * 80
+    print('sleep', sleep_time)
+    time.sleep(sleep_time)
     data_list = []
     for imp_id, hist, imp in tqdm(df[["id", "hist", "imp"]].values, total=df.shape[0]):
         if str(hist) == 'nan':
