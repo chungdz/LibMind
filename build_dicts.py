@@ -41,8 +41,8 @@ all_news = pd.concat([all_news, test_news], ignore_index=True)
 all_news = all_news.drop_duplicates("newsid")
 print("All news: {}".format(len(all_news)))
 
-news_dict = {}
-word_dict = {}
+news_dict = {'<pad>': 0}
+word_dict = {'<pad>': 0}
 word_idx = 1
 news_idx = 1
 for n, title in all_news[['newsid', "title"]].values:
