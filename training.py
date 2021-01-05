@@ -34,6 +34,7 @@ from torchfm.model.wd import WideAndDeepModel
 from deepctr_torch.inputs import SparseFeat, VarLenSparseFeat, get_feature_names
 from deepctr_torch.models import DeepFM
 
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     """

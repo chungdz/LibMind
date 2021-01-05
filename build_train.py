@@ -51,7 +51,8 @@ def build_examples(rank, args, df, news_info, fout):
                 raise Exception('label error!')
         # down sample
         if args.ftype == 'train':
-            neg_num = math.ceil(len(imp_neg_list) / 5)
+            # neg_num = math.ceil(len(imp_neg_list) / 5)
+            neg_num = min(len(imp_pos_list), len(imp_neg_list))
             sampled = random.sample(imp_neg_list, neg_num)
             all_imp = imp_pos_list + sampled
         elif args.ftype == 'dev':
