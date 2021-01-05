@@ -6,12 +6,14 @@ import math
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
+import time
 import random
 from tqdm import tqdm
 
 random.seed(7)
 
 def build_examples(rank, args, df, news_info, fout):
+    time.sleep((rank // 10) * 80)
     data_list = []
     for imp_id, hist, imp in tqdm(df[["id", "hist", "imp"]].values, total=df.shape[0]):
         if str(hist) == 'nan':
