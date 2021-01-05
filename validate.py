@@ -37,11 +37,9 @@ def run(cfg, rank, test_dataset, device, model):
         f = fix_f + var_f
         f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=10, combiner='sum'))
         f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * 10, combiner='mean'))
-        print('load ctr dfm')
         model = DeepFM(f, f, task='binary', device=device)
 
         saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
-        print("Load from:", saved_model_path)
         if not os.path.exists(saved_model_path):
             print("Not Exist: {}".format(saved_model_path))
             return []
