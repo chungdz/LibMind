@@ -147,7 +147,7 @@ def main(cfg):
         model = DeepFM(f, f, task='binary', device='cpu')
     elif cfg.model == 'ctr_fm':
         print('load ctr fm')
-        model = LibFM(f, f, task='binary', device=device)
+        model = LibFM(f, f, task='binary', device='cpu')
 
     saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
     print("Load from:", saved_model_path)
