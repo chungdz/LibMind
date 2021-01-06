@@ -74,7 +74,11 @@ def run(cfg, rank, test_dataset, device, model):
             pred = model(data[:, 2:])
             if pred.dim() > 1:
                 pred = pred.squeeze()
-            preds += pred.cpu().numpy().tolist()
+            try:
+                preds += pred.cpu().numpy().tolist()
+            except:
+                print(data.size())
+                preds.append(int(pred.cpu().numpy()))
             truths += data[:, 1].long().cpu().numpy().tolist()
 
         tmp_dict = {}
