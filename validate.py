@@ -25,6 +25,7 @@ from torchfm.model.dfm import DeepFactorizationMachineModel
 from torchfm.model.wd import WideAndDeepModel
 from deepctr_torch.inputs import SparseFeat, VarLenSparseFeat, get_feature_names
 from deepctr_torch.models import DeepFM
+from deepctr_torch.models import DeepFM, WDL
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -40,6 +41,8 @@ def run(cfg, rank, test_dataset, device, model):
         model = DeepFM(f, f, task='binary', device=device)
     elif cfg.model == 'ctr_fm':
         model = LibFM(f, f, task='binary', device=device)
+    elif cfg.model == 'ctr_wdl':
+        model = WDL(f, f, task='binary', device=device)
 
     saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
     if not os.path.exists(saved_model_path):
@@ -148,6 +151,9 @@ def main(cfg):
     elif cfg.model == 'ctr_fm':
         print('load ctr fm')
         model = LibFM(f, f, task='binary', device='cpu')
+    elif cfg.model == 'ctr_wdl':
+        print('load ctr wdl')
+        model = WDL(f, f, task='binary', device=device)
 
     saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
     print("Load from:", saved_model_path)
