@@ -32,7 +32,7 @@ from torchfm.model.fm import FactorizationMachineModel
 from torchfm.model.dfm import DeepFactorizationMachineModel
 from torchfm.model.wd import WideAndDeepModel
 from deepctr_torch.inputs import SparseFeat, VarLenSparseFeat, get_feature_names
-from deepctr_torch.models import DeepFM
+from deepctr_torch.models import DeepFM, WDL
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -65,6 +65,9 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     elif cfg.model == 'ctr_fm':
         print('load ctr fm')
         model = LibFM(f, f, task='binary', device=device)
+    elif cfg.model == 'ctr_wdl':
+        print('load ctr wdl')
+        model = WDL(f, f, task='binary', device=device)
 
     # Build optimizer.
     steps_one_epoch = len(train_data_loader)
