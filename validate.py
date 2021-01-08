@@ -153,7 +153,7 @@ def main(cfg):
         model = LibFM(f, f, task='binary', device='cpu')
     elif cfg.model == 'ctr_wdl':
         print('load ctr wdl')
-        model = WDL(f, f, task='binary', device=device)
+        model = WDL(f, f, task='binary', device='cpu')
 
     saved_model_path = os.path.join('./checkpoint/', 'model.ep{0}'.format(cfg.epoch))
     print("Load from:", saved_model_path)
