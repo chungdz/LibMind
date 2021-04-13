@@ -15,4 +15,4 @@ python resplit.py --filenum=10 --fsamples=MIND/raw/train
 python build_train.py --processes=10 --ftype=dev --max_hist_length=30 --root=MIND --fsamples=dev_behaviors.tsv --max_title=15
 python build_train.py --processes=10 --ftype=test --max_hist_length=30 --root=MIND --fsamples=test_behaviors.tsv --max_title=15
 CUDA_VISIBLE_DEVICES=4,5,6,7 python training.py --gpus=4 --max_hist_length=30 --epoch=10 --model=ctr_fm --batch_size=256 --port=9440 --root=MIND
-CUDA_VISIBLE_DEVICES=4,5,6,7 python validate.py --gpus=4 --max_hist_length=30 --epoch=0 --filenum=10 --model=ctr_fm --batch_size=256 --root=MIND
+CUDA_VISIBLE_DEVICES=4,5,6,7 python validate.py --gpus=4 --max_hist_length=30 --epoch=0 --filenum=10 --model=ctr_fm --batch_size=256 --root=MIND --tmp=tmp

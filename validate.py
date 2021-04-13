@@ -90,7 +90,7 @@ def run(cfg, rank, test_dataset, device, model):
         tmp_dict['labels'] = truths
         tmp_dict['preds'] = preds
 
-        with open(cfg.result_path + 'tmp_small_{}.json'.format(rank), 'w', encoding='utf-8') as f:
+        with open(cfg.result_path + '{}_{}.json'.format(cfg.tmp, rank), 'w', encoding='utf-8') as f:
             json.dump(tmp_dict, f)
 
 def gather(cfg, turn, validate=False):
@@ -224,6 +224,7 @@ if __name__ == '__main__':
     parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
     parser.add_argument("--model", default='fm', type=str)
     parser.add_argument("--root", default="data", type=str)
+    parser.add_argument("--tmp", default="tmp_small", type=str)
     opt = parser.parse_args()
     logging.warning(opt)
 
