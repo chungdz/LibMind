@@ -69,6 +69,7 @@ def build_examples(rank, args, df, news_info, fout):
             data_list.append(new_row)
     
     datanp = np.array(data_list, dtype=int)
+    print(datanp.shape)
     np.save(fout, datanp)
 
 def main(args):
