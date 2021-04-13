@@ -134,10 +134,10 @@ def main(cfg):
     file_num = cfg.filenum
     cfg.result_path = './result/'
     print('load dict')
-    news_dict = json.load(open('./data/news.json', 'r', encoding='utf-8'))
+    news_dict = json.load(open('./{}/news.json'.format(cfg.root), 'r', encoding='utf-8'))
     cfg.news_num = len(news_dict)
     print('load words dict')
-    word_dict = json.load(open('./data/word.json', 'r', encoding='utf-8'))
+    word_dict = json.load(open('./{}/word.json'.format(cfg.root), 'r', encoding='utf-8'))
     cfg.word_num = len(word_dict)
 
     fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
@@ -165,8 +165,8 @@ def main(cfg):
     print(model.load_state_dict(pretrained_model, strict=False))
 
     for point_num in range(file_num):
-        print("processing data/raw/test-{}.npy".format(point_num))
-        valid_dataset = FMData(np.load("data/raw/test-{}.npy".format(point_num)))
+        print("processing {}/raw/test-{}.npy".format(cfg.root, point_num))
+        valid_dataset = FMData(np.load("{}/raw/test-{}.npy".format(cfg.root, point_num)))
 
         dataset_list = split_dataset(valid_dataset, cfg.gpus)
         
@@ -201,6 +201,7 @@ if __name__ == '__main__':
     parser.add_argument('--port', type=int, default=9337)
     parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
     parser.add_argument("--model", default='fm', type=str)
+    parser.add_argument("--root", default="data", type=str)
     opt = parser.parse_args()
     logging.warning(opt)
 
