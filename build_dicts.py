@@ -46,9 +46,9 @@ if args.root == 'data':
     all_news = pd.concat([all_news, test_news], ignore_index=True)
     all_news = all_news.drop_duplicates("newsid")
     print("All news: {}".format(len(all_news)))
-elif args.root == 'MIND':
+else:
 
-    all_news = pd.read_csv("MIND/news.tsv", sep="\t", encoding="utf-8",
+    all_news = pd.read_csv("{}/news.tsv".format(args.root), sep="\t", encoding="utf-8",
                             names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
                             quoting=3)
 
@@ -83,10 +83,10 @@ if args.root == 'data':
     f_train_beh = os.path.join("data", "train/behaviors.tsv")
     f_dev_beh = os.path.join("data", "valid/behaviors.tsv")
     f_test_beh = os.path.join("data", "test/behaviors.tsv")
-elif args.root == 'MIND':
-    f_train_beh = "MIND/train_behaviors.tsv"
-    f_dev_beh = "MIND/dev_behaviors.tsv"
-    f_test_beh = "MIND/test_behaviors.tsv"
+else:
+    f_train_beh = "{}/train_behaviors.tsv".format(args.root)
+    f_dev_beh = "{}/dev_behaviors.tsv".format(args.root)
+    f_test_beh = "{}/test_behaviors.tsv".format(args.root)
 
 print("Loading training beh")
 all_beh = pd.read_csv(f_train_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
