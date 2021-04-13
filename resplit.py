@@ -21,7 +21,7 @@ for i in range(cfg.filenum):
     data_list.append(np.load(origin_path))
     os.remove(origin_path)
 datanp = np.concatenate(data_list, axis=0)
-
+print(datanp.shape)
 sub_len = math.ceil(len(datanp) / cfg.processes)
 
 for i in range(cfg.processes):
