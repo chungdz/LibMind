@@ -2,7 +2,7 @@ import os
 import argparse
 import json
 import pickle
-from tqdm import tqdm
+from tqdm import tqdm, trange
 import time
 import torch
 import numpy as np
@@ -164,12 +164,36 @@ def main(cfg):
     pretrained_model = torch.load(saved_model_path, map_location='cpu')
     print(model.load_state_dict(pretrained_model, strict=False))
 
-    for point_num in range(file_num):
-        print("processing {}/raw/test-{}.npy".format(cfg.root, point_num))
-        valid_dataset = FMData(np.load("{}/raw/test-{}.npy".format(cfg.root, point_num)))
+    if cfg.root == 'data':
+        for point_num in range(file_num):
+            print("processing {}/raw/test-{}.npy".format(cfg.root, point_num))
+            valid_dataset = FMData(np.load("{}/raw/test-{}.npy".format(cfg.root, point_num)))
+
+            dataset_list = split_dataset(valid_dataset, cfg.gpus)
+            
+            processes = []
+            for rank in range(cfg.gpus):
+                cur_device = torch.device("cuda:{}".format(rank))
+
+                p = mp.Process(target=run, args=(cfg, rank, dataset_list[rank], cur_device, model))
+                p.start()
+                processes.append(p)
+
+            for p in processes:
+                p.join()
+            
+            gather(cfg, point_num)
+    
+        gather_all(cfg.result_path, file_num, validate=False, save=True)
+    else:
+        print('load test')
+        dev_list = []
+        for i in trange(cfg.filenum):
+            dev_list.append(np.load("{}/raw/test-{}.npy".format(cfg.root, i)))
+        valid_dataset = FMData(np.concatenate(dev_list, axis=0))
 
         dataset_list = split_dataset(valid_dataset, cfg.gpus)
-        
+            
         processes = []
         for rank in range(cfg.gpus):
             cur_device = torch.device("cuda:{}".format(rank))
@@ -181,9 +205,7 @@ def main(cfg):
         for p in processes:
             p.join()
         
-        gather(cfg, point_num)
-    
-    gather_all(cfg.result_path, file_num, validate=False, save=True)
+        gather_all(cfg.result_path, cfg.gpus, validate=False, save=True)
         
 
 
