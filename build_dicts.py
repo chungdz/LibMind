@@ -21,7 +21,6 @@ def removePunctuation(text):
 parser = argparse.ArgumentParser()
 parser.add_argument("--root", default="data", type=str)
 parser.add_argument("--max_title", default=10, type=int)
-parser = argparse.ArgumentParser()
 args = parser.parse_args()
 
 if args.root == 'data':
