@@ -55,7 +55,7 @@ def build_examples(rank, args, df, news_info, fout):
             neg_num = min(len(imp_pos_list), len(imp_neg_list))
             sampled = random.sample(imp_neg_list, neg_num)
             all_imp = imp_pos_list + sampled
-        elif args.ftype == 'dev':
+        elif args.ftype == 'dev' or args.ftype == 'test':
             all_imp = imp_pos_list + imp_neg_list
 
         for p in all_imp:
