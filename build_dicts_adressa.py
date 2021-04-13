@@ -55,7 +55,7 @@ json.dump(news_dict, open('{}/news.json'.format(args.root), 'w', encoding='utf-8
 json.dump(word_dict, open('{}/word.json'.format(args.root), 'w', encoding='utf-8'))
 
 print("Loading behaviors info")
-behaviors_raw = json.load(open('adressa/his_behaviors.json'))
+behaviors_raw = json.load(open('{}/his_behaviors.json'.format(args.root)))
 
 user_dict = {}
 user_idx = 0
@@ -64,6 +64,6 @@ for uid, uinfo in tqdm(behaviors_raw.items(), total=len(behaviors_raw), desc='hi
     user_idx += 1
     
     for nid in uinfo['pos']:
-        user_dict[uid]["his"].append(news_dict[nid]['idx'])
+        user_dict[uid]["his"].append(nid)
 
 json.dump(user_dict, open('{}/user.json'.format(args.root), 'w', encoding='utf-8'))
