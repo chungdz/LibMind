@@ -205,7 +205,7 @@ def main(cfg):
         for p in processes:
             p.join()
         
-        gather_all(cfg.result_path, cfg.gpus, validate=False, save=True)
+        gather_all(cfg.result_path, cfg.gpus, validate=True, save=False)
         
 
 
