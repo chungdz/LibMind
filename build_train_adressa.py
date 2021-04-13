@@ -77,7 +77,7 @@ def main(args):
     for i in range(args.processes):
         output_path = os.path.join(args.root, args.fout,  "{}-{}.npy".format(args.ftype, i))
         p = mp.Process(target=build_examples, args=(
-            i, args, dfs[i], news_info, output_path))
+            i, args, dfs[i], news_info, user_info, output_path))
         p.start()
         processes.append(p)
 
