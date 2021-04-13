@@ -69,8 +69,8 @@ for n, title in all_news[['newsid', "title"]].values:
             word_idx += 1
         wid_arr.append(word_dict[t])
     cur_len = len(wid_arr)
-    if cur_len < 10:
-        for l in range(10 - cur_len):
+    if cur_len < args.max_title:
+        for l in range(args.max_title - cur_len):
             wid_arr.append(0)
     news_dict[n]['title'] = wid_arr[:args.max_title]   
 
