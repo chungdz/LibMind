@@ -19,7 +19,7 @@ def build_examples(rank, args, df, news_info, fout):
         else:
             his_list = str(hist).strip().split()
 
-        word_len = 10
+        word_len = args.max_title
         empty_news = list(np.zeros(word_len))
         his_idx_list = [news_info[h]['idx'] for h in his_list]
         his_title_list = []
@@ -106,6 +106,7 @@ if __name__ == "__main__":
     parser.add_argument("--processes", default=40, type=int,
                         help="Processes number")
     parser.add_argument("--root", default="data", type=str)
+    parser.add_argument("--max_title", default=10, type=int)
     args = parser.parse_args()
 
     main(args)

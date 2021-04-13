@@ -10,5 +10,5 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python validate.py --gpus=4 --max_hist_length=30 --
 CUDA_VISIBLE_DEVICES=0,1,2,3 python validate_build_test.py --gpus=4 --max_hist_length=30 --epoch=0 --filenum=40 --model=ctr_dfm --batch_size=256
 
 python build_dicts.py --root=MIND --max_title=15
-python build_train.py --processes=10 --ftype=train --max_hist_length=30 --root=MIND --fsamples=train_behaviors.tsv
+python build_train.py --processes=10 --ftype=train --max_hist_length=30 --root=MIND --fsamples=train_behaviors.tsv --max_title=15
 python resplit.py --filenum 10
