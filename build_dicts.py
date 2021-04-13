@@ -17,29 +17,41 @@ def removePunctuation(text):
     text = re.sub(r'[{}]+'.format(punctuation),'',text)
     return text.strip().lower()
 
+# Path options.
+parser = argparse.ArgumentParser()
+parser.add_argument("--root", default="data", type=str)
+parser.add_argument("--max_title", default=10, type=int)
+parser = argparse.ArgumentParser()
+args = parser.parse_args()
 
-print("Loading news info")
-f_train_news = os.path.join("data", "train/news.tsv")
-f_dev_news = os.path.join("data", "valid/news.tsv")
-f_test_news = os.path.join("data", "test/news.tsv")
+if args.root == 'data':
+    print("Loading news info")
+    f_train_news = os.path.join("data", "train/news.tsv")
+    f_dev_news = os.path.join("data", "valid/news.tsv")
+    f_test_news = os.path.join("data", "test/news.tsv")
 
-print("Loading training news")
-all_news = pd.read_csv(f_train_news, sep="\t", encoding="utf-8",
-                        names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
-                        quoting=3)
+    print("Loading training news")
+    all_news = pd.read_csv(f_train_news, sep="\t", encoding="utf-8",
+                            names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
+                            quoting=3)
 
-print("Loading dev news")
-dev_news = pd.read_csv(f_dev_news, sep="\t", encoding="utf-8",
-                        names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
-                        quoting=3)
-all_news = pd.concat([all_news, dev_news], ignore_index=True)
-print("Loading testing news")
-test_news = pd.read_csv(f_test_news, sep="\t", encoding="utf-8",
-                        names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
-                        quoting=3)
-all_news = pd.concat([all_news, test_news], ignore_index=True)
-all_news = all_news.drop_duplicates("newsid")
-print("All news: {}".format(len(all_news)))
+    print("Loading dev news")
+    dev_news = pd.read_csv(f_dev_news, sep="\t", encoding="utf-8",
+                            names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
+                            quoting=3)
+    all_news = pd.concat([all_news, dev_news], ignore_index=True)
+    print("Loading testing news")
+    test_news = pd.read_csv(f_test_news, sep="\t", encoding="utf-8",
+                            names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
+                            quoting=3)
+    all_news = pd.concat([all_news, test_news], ignore_index=True)
+    all_news = all_news.drop_duplicates("newsid")
+    print("All news: {}".format(len(all_news)))
+elif args.root == 'MIND':
+
+    all_news = pd.read_csv("MIND/news.tsv", sep="\t", encoding="utf-8",
+                            names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
+                            quoting=3)
 
 news_dict = {'<pad>': 0}
 word_dict = {'<pad>': 0}
@@ -61,16 +73,21 @@ for n, title in all_news[['newsid', "title"]].values:
     if cur_len < 10:
         for l in range(10 - cur_len):
             wid_arr.append(0)
-    news_dict[n]['title'] = wid_arr[:10]   
+    news_dict[n]['title'] = wid_arr[:args.max_title]   
 
 print('all word', len(word_dict))
-json.dump(news_dict, open('data/news.json', 'w', encoding='utf-8'))
-json.dump(word_dict, open('data/word.json', 'w', encoding='utf-8'))
+json.dump(news_dict, open('{}/news.json'.format(args.root), 'w', encoding='utf-8'))
+json.dump(word_dict, open('{}/word.json'.format(args.root), 'w', encoding='utf-8'))
 
 print("Loading behaviors info")
-f_train_beh = os.path.join("data", "train/behaviors.tsv")
-f_dev_beh = os.path.join("data", "valid/behaviors.tsv")
-f_test_beh = os.path.join("data", "test/behaviors.tsv")
+if args.root == 'data':
+    f_train_beh = os.path.join("data", "train/behaviors.tsv")
+    f_dev_beh = os.path.join("data", "valid/behaviors.tsv")
+    f_test_beh = os.path.join("data", "test/behaviors.tsv")
+elif args.root == 'MIND':
+    f_train_beh = "MIND/train_behaviors.tsv"
+    f_dev_beh = "MIND/dev_behaviors.tsv"
+    f_test_beh = "MIND/test_behaviors.tsv"
 
 print("Loading training beh")
 all_beh = pd.read_csv(f_train_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
@@ -90,4 +107,4 @@ for u in user_ids:
     user_dict[u] = user_idx
     user_idx += 1
 
-json.dump(user_dict, open('data/user.json', 'w', encoding='utf-8'))
+json.dump(user_dict, open('{}/user.json'.format(args.root), 'w', encoding='utf-8'))
