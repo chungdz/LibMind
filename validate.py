@@ -225,6 +225,7 @@ if __name__ == '__main__':
     parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
     parser.add_argument("--model", default='fm', type=str)
     parser.add_argument("--root", default="data", type=str)
+    parser.add_argument("--max_title", default=10, type=int)
     parser.add_argument("--tmp", default="tmp_small", type=str)
     opt = parser.parse_args()
     logging.warning(opt)
