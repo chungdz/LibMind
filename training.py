@@ -236,7 +236,7 @@ def main(cfg):
     print('load dev')
     dev_list = []
     for i in range(cfg.filenum):
-        dev_list.append(np.load("{}/raw/dev-{}.npy".format(cfg.root, i)))
+        dev_list.append(np.load("{}/raw/test-{}.npy".format(cfg.root, i)))
     validate_dataset = FMData(np.concatenate(dev_list, axis=0))
     print('load news dict')
     news_dict = json.load(open('./{}/news.json'.format(cfg.root, i), 'r', encoding='utf-8'))
