@@ -53,6 +53,7 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     train_data_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, drop_last=True)
     valid_data_loader = DataLoader(valid_dataset, batch_size=cfg.batch_size, shuffle=False)
 
+    # MIND 用ID adressa 不用
     # # Build model.
     # fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
     # var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
@@ -236,7 +237,7 @@ def main(cfg):
     print('load dev')
     dev_list = []
     for i in range(cfg.filenum):
-        dev_list.append(np.load("{}/raw/test-{}.npy".format(cfg.root, i)))
+        dev_list.append(np.load("{}/raw/{}-{}.npy".format(cfg.root, cfg.vtype, i)))
     validate_dataset = FMData(np.concatenate(dev_list, axis=0))
     print('load news dict')
     news_dict = json.load(open('./{}/news.json'.format(cfg.root, i), 'r', encoding='utf-8'))
@@ -277,6 +278,7 @@ if __name__ == '__main__':
     parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
     parser.add_argument("--model", default='fm', type=str)
     parser.add_argument("--root", default="data", type=str)
+    parser.add_argument("--vtype", default="dev", type=str)
     parser.add_argument("--max_title", default=10, type=int)
     opt = parser.parse_args()
     logging.warning(opt)
