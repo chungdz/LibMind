@@ -32,12 +32,12 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 def run(cfg, rank, test_dataset, device, model):
     set_seed(7)
 
-    # fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
-    # var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
-    # f = fix_f + var_f
-    f = []
-    f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=50), maxlen=cfg.max_title, combiner='sum'))
-    f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=50), maxlen=cfg.max_hist_length * cfg.max_title, combiner='mean'))
+    fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
+    var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
+    f = fix_f + var_f
+    # f = []
+    f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_title, combiner='sum'))
+    f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * cfg.max_title, combiner='mean'))
     if cfg.model == 'ctr_dfm':
         model = DeepFM(f, f, task='binary', device=device)
     elif cfg.model == 'ctr_fm':
@@ -141,12 +141,12 @@ def main(cfg):
     word_dict = json.load(open('./{}/word.json'.format(cfg.root), 'r', encoding='utf-8'))
     cfg.word_num = len(word_dict)
 
-    # fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
-    # var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
-    # f = fix_f + var_f
-    f = []
-    f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=50), maxlen=cfg.max_title, combiner='sum'))
-    f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=50), maxlen=cfg.max_hist_length * cfg.max_title, combiner='mean'))
+    fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
+    var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
+    f = fix_f + var_f
+    # f = []
+    f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_title, combiner='sum'))
+    f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * cfg.max_title, combiner='mean'))
     if cfg.model == 'ctr_dfm':
         print('load ctr dfm')
         model = DeepFM(f, f, task='binary', device='cpu')
