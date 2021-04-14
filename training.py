@@ -57,8 +57,9 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
     var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
     f = fix_f + var_f
-    f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=10, combiner='sum'))
-    f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * 10, combiner='mean'))
+    # f = [] 
+    f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_title, combiner='sum'))
+    f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * cfg.max_title, combiner='mean'))
     if cfg.model == 'ctr_dfm':
         print('load ctr dfm')
         model = DeepFM(f, f, task='binary', device=device)
@@ -276,6 +277,7 @@ if __name__ == '__main__':
     parser.add_argument("--max_hist_length", default=100, type=int, help="Max length of the click history of the user.")
     parser.add_argument("--model", default='fm', type=str)
     parser.add_argument("--root", default="data", type=str)
+    parser.add_argument("--max_title", default=10, type=int)
     opt = parser.parse_args()
     logging.warning(opt)
 
