@@ -58,8 +58,8 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     # var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
     # f = fix_f + var_f
     f = [] 
-    f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_title, combiner='sum'))
-    f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * cfg.max_title, combiner='mean'))
+    f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=50), maxlen=cfg.max_title, combiner='sum'))
+    f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=50), maxlen=cfg.max_hist_length * cfg.max_title, combiner='mean'))
     if cfg.model == 'ctr_dfm':
         print('load ctr dfm')
         model = DeepFM(f, f, task='binary', device=device)
