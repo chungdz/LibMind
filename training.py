@@ -54,10 +54,10 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
     valid_data_loader = DataLoader(valid_dataset, batch_size=cfg.batch_size, shuffle=False)
 
     # # Build model.
-    fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
-    var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
-    f = fix_f + var_f
-    # f = [] 
+    # fix_f = [SparseFeat('target_news', cfg.news_num, embedding_dim=100)]
+    # var_f = [VarLenSparseFeat(SparseFeat('his_news', vocabulary_size=cfg.news_num, embedding_dim=100), maxlen=cfg.max_hist_length, combiner='sum')]
+    # f = fix_f + var_f
+    f = [] 
     f.append(VarLenSparseFeat(SparseFeat('target_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_title, combiner='sum'))
     f.append(VarLenSparseFeat(SparseFeat('his_title', vocabulary_size=cfg.word_num, embedding_dim=100), maxlen=cfg.max_hist_length * cfg.max_title, combiner='mean'))
     if cfg.model == 'ctr_dfm':
@@ -137,7 +137,7 @@ def train(cfg, epoch, rank, model, loader, optimizer, steps_one_epoch, device):
         # data = {key: value.to(device) for key, value in data.items()}
         data = data.to(device)
         # 1. Forward
-        pred = model(data[:, 2:]).squeeze()
+        pred = model(data[:, 3 + cfg.max_hist_length:]).squeeze()
         loss = F.binary_cross_entropy(pred, data[:, 1].float())
 
         # 3.Backward.
@@ -178,7 +178,7 @@ def validate(cfg, epoch, model, device, rank, valid_data_loader, fast_dev=False,
             data = data.to(device)
 
             # 1. Forward
-            pred = model(data[:, 2:]).squeeze()
+            pred = model(data[:, 3 + cfg.max_hist_length:]).squeeze()
 
             preds += pred.cpu().numpy().tolist()
             truths += data[:, 1].long().cpu().numpy().tolist()
