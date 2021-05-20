@@ -25,19 +25,20 @@ parser.add_argument("--max_title", default=10, type=int)
 args = parser.parse_args()
 
 print("Loading news info")
-news_dict_raw = json.load(open('Adressa/news_dict.json'))
+all_news = pd.read_csv("{}/news.tsv".format(args.root), sep="\t", encoding="utf-8",
+                            names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
+                            quoting=3)
 
 news_dict = {'<pad>': 0}
 word_dict = {'<pad>': 0}
 word_idx = 1
 news_idx = 1
-for nid, ninfo in tqdm(news_dict_raw.items(), total=len(news_dict_raw), desc='parse news'):
-
-    news_dict[nid] = {}
-    news_dict[nid]['idx'] = news_idx
+for n, title in all_news[['newsid', "title"]].values:
+    news_dict[n] = {}
+    news_dict[n]['idx'] = news_idx
     news_idx += 1
 
-    tarr = removePunctuation(ninfo).split()
+    tarr = removePunctuation(title).split()
     wid_arr = []
     for t in tarr:
         if t not in word_dict:
@@ -48,7 +49,7 @@ for nid, ninfo in tqdm(news_dict_raw.items(), total=len(news_dict_raw), desc='pa
     if cur_len < args.max_title:
         for l in range(args.max_title - cur_len):
             wid_arr.append(0)
-    news_dict[nid]['title'] = wid_arr[:args.max_title]   
+    news_dict[n]['title'] = wid_arr[:args.max_title]
 
 print('all word', len(word_dict))
 json.dump(news_dict, open('{}/news.json'.format(args.root), 'w', encoding='utf-8'))
