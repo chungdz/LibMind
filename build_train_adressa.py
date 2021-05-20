@@ -65,7 +65,7 @@ def build_examples(rank, args, df, news_info, uinfo, fout):
 
 def main(args):
     f_train_beh = os.path.join(args.root, args.fsamples)
-    df = pd.read_csv(f_train_beh, sep="\t", encoding="utf-8", names=["id", "uid", "imp"])
+    df = pd.read_csv(f_train_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
     news_info = json.load(open('{}/news.json'.format(args.root), 'r', encoding='utf-8'))
     user_info = json.load(open('{}/user.json'.format(args.root), 'r', encoding='utf-8'))
 
