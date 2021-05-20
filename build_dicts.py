@@ -47,7 +47,6 @@ if args.root == 'data':
     all_news = all_news.drop_duplicates("newsid")
     print("All news: {}".format(len(all_news)))
 else:
-
     all_news = pd.read_csv("{}/news.tsv".format(args.root), sep="\t", encoding="utf-8",
                             names=["newsid", "cate", "subcate", "title", "abs", "url", "title_ents", "abs_ents"],
                             quoting=3)
