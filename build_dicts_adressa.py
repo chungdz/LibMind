@@ -55,16 +55,28 @@ print('all word', len(word_dict))
 json.dump(news_dict, open('{}/news.json'.format(args.root), 'w', encoding='utf-8'))
 json.dump(word_dict, open('{}/word.json'.format(args.root), 'w', encoding='utf-8'))
 
-print("Loading behaviors info")
-behaviors_raw = json.load(open('{}/his_behaviors.json'.format(args.root)))
+f_train_beh = "{}/train_behaviors.tsv".format(args.root)
+f_dev_beh = "{}/dev_behaviors.tsv".format(args.root)
+f_test_beh = "{}/test_behaviors.tsv".format(args.root)
+
+print("Loading training beh")
+all_beh = pd.read_csv(f_train_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+print("Loading dev beh")
+dev_beh = pd.read_csv(f_dev_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+all_beh = pd.concat([all_beh, dev_beh], ignore_index=True)
+print("Loading testing beh")
+test_beh = pd.read_csv(f_test_beh, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+all_beh = pd.concat([all_beh, test_beh], ignore_index=True)
 
 user_dict = {}
 user_idx = 0
-for uid, uinfo in tqdm(behaviors_raw.items(), total=len(behaviors_raw), desc='history behavior'):
-    user_dict[uid] = {"his": [], "idx": user_idx}
+for uid, hist in tqdm(all_beh[["uid", "hist"]].values, total=all_beh.shape[0], desc='build user'):
+    user_dict[uid] = {
+        'idx': user_idx,
+        'his': hist.split()
+    }
     user_idx += 1
-    
-    for nid in uinfo['pos']:
-        user_dict[uid]["his"].append(nid)
+
+print("user num", user_idx)
 
 json.dump(user_dict, open('{}/user.json'.format(args.root), 'w', encoding='utf-8'))
