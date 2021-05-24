@@ -17,10 +17,14 @@ python build_train.py --processes=10 --ftype=test --max_hist_length=30 --root=MI
 CUDA_VISIBLE_DEVICES=4,5,6,7 python training.py --gpus=4 --max_hist_length=30 --epoch=4 --model=ctr_fm --batch_size=256 --port=9440 --root=MIND --max_title=15 --vtype=test
 CUDA_VISIBLE_DEVICES=4,5,6,7 python validate.py --gpus=4 --max_hist_length=30 --epoch=0 --filenum=10 --model=ctr_fm --batch_size=256 --root=MIND --tmp=tmp --max_title=15
 
+cp train/behaviors.tsv ~/LibMind/Adressa/train_behaviors.tsv
+cp dev/behaviors.tsv ~/LibMind/Adressa/dev_behaviors.tsv
+cp test/behaviors.tsv ~/LibMind/Adressa/test_behaviors.tsv
+
 python build_dicts_adressa.py --root=Adressa --max_title=15
-python build_train_adressa.py --processes=10 --ftype=train --max_hist_length=30 --root=Adressa --fsamples=train_behaviors.tsv --max_title=15
+python build_train_adressa.py --processes=10 --ftype=train --max_hist_length=10 --root=Adressa --fsamples=train_behaviors.tsv --max_title=15
 python resplit.py --filenum=10 --fsamples=Adressa/raw/train
-python build_train_adressa.py --processes=10 --ftype=dev --max_hist_length=30 --root=Adressa --fsamples=dev_behaviors.tsv --max_title=15
-python build_train_adressa.py --processes=10 --ftype=test --max_hist_length=30 --root=Adressa --fsamples=test_behaviors.tsv --max_title=15
-CUDA_VISIBLE_DEVICES=4,5,6,7 python training.py --gpus=4 --max_hist_length=30 --epoch=4 --model=ctr_fm --batch_size=256 --port=9440 --root=Adressa --max_title=15 --vtype=test
+python build_train_adressa.py --processes=10 --ftype=dev --max_hist_length=10 --root=Adressa --fsamples=dev_behaviors.tsv --max_title=15
+python build_train_adressa.py --processes=10 --ftype=test --max_hist_length=10 --root=Adressa --fsamples=test_behaviors.tsv --max_title=15
+CUDA_VISIBLE_DEVICES=4,5,6,7 python training.py --gpus=4 --max_hist_length=10 --epoch=4 --model=ctr_dfm --batch_size=256 --port=9440 --root=Adressa --max_title=15 --vtype=test
 CUDA_VISIBLE_DEVICES=4,5,6,7 python validate.py --gpus=4 --max_hist_length=30 --epoch=0 --filenum=10 --model=ctr_fm --batch_size=256 --root=Adressa --tmp=tmp --max_title=15
