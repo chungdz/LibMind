@@ -98,7 +98,7 @@ def run(cfg, rank, device, finished, train_dataset_path, valid_dataset):
 
             while finished.value < cfg.gpus:
                 time.sleep(1)
-            gather_all(cfg.result_path, cfg.gpus, validate=True, save=False)
+            gather_all(cfg.result_path, cfg.gpus, validate=True, save=True, epoch=epoch)
             finished.value = 0
 
 def average_gradients(model):

@@ -24,7 +24,7 @@ from utils.eval_util import cal_metric
 
 
 
-def gather(output_path, filenum, validate=False, save=True):
+def gather(output_path, filenum, validate=False, save=True, epoch=0):
     preds = []
     labels = []
     imp_indexes = []
@@ -73,5 +73,5 @@ def gather(output_path, filenum, validate=False, save=True):
             final_arr.append(new_row)
         
         fdf = pd.DataFrame(final_arr, columns=['impression', 'labels', 'preds', 'ranks'])
-        fdf.drop(columns=['labels', 'ranks']).to_csv(output_path + 'score.txt', sep=' ', index=False)
-        fdf.drop(columns=['labels', 'preds']).to_csv(output_path + 'result.txt', header=None, sep=' ', index=False)
+        fdf.drop(columns=['labels', 'ranks']).to_csv(output_path + "_" + str(epoch) + "_" + 'score.txt', sep=' ', index=False)
+        fdf.drop(columns=['labels', 'preds']).to_csv(output_path + "_" + str(epoch) + "_" + 'result.txt', header=None, sep=' ', index=False)
